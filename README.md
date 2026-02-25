@@ -82,7 +82,9 @@ Scan for unauthenticated Redis and MongoDB instances on 10.0.0.0/16
 
 Other example : 
 
+![Pwnhub1](images/pwnhub1.png)
 
+![Pwnhub1](images/pwnhub2.png)
 
 ### Available scanners
 
