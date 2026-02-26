@@ -23,7 +23,15 @@ python3.12 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 ```
 
-**2. Configure Claude Desktop**
+**2. Run MCP Server**
+
+Run the following command to start the MCP server
+
+```bash
+.venv/bin/python server.py
+```
+
+**3. Configure Claude Desktop**
 
 Edit `~/Library/Application Support/Claude/claude_desktop_config.json` :
 
@@ -49,7 +57,7 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json` :
 | `NETSCAN_SCAN_TIMEOUT` | `600` | Max seconds per scan |
 | `NETSCAN_HISTORY_FILE` | `~/.netscan_history.log` | Command history log |
 
-**3. Restart Claude Desktop**
+**4. Restart Claude Desktop**
 
 The netscan tools appear in the "Settings" menu :
 
