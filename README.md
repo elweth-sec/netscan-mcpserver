@@ -17,7 +17,7 @@ MCP server wrapping [netscan](https://github.com/hegusung/netscan) — connect C
 **1. Clone and set up the virtual environment**
 
 ```bash
-git clone https://github.com/youruser/netscan-mcpserver
+git clone https://github.com/elweth-sec/netscan-mcpserver
 cd netscan-mcpserver
 python3.12 -m venv .venv
 .venv/bin/pip install -r requirements.txt
