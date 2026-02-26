@@ -51,7 +51,7 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json` :
 
 **3. Restart Claude Desktop**
 
-The netscan tools appear in the 🔌 menu — 25 tools should be listed.
+The netscan tools appear in the "Settings" menu :
 
 ![Settings](images/settings.png)
 
