@@ -176,7 +176,8 @@ async def postgrescan(
     username: Optional[str] = None,
     password: Optional[str] = None,
     list_dbs: bool = False,
-    sql_query: Optional[str] = None,
+    dump_hashes: bool = False,
+    cmd: Optional[str] = None,
     bruteforce: bool = False,
     username_file: Optional[str] = None,
     password_file: Optional[str] = None,
@@ -196,8 +197,9 @@ async def postgrescan(
         port:               PostgreSQL port (default: "5432")
         username:           Username to authenticate with
         password:           Password to authenticate with
-        list_dbs:           List available databases
-        sql_query:          Execute SQL query (e.g. "SELECT version()")
+        list_dbs:           List available databases (--dbs)
+        dump_hashes:        Dump database user hashes (--hashes)
+        cmd:                Execute a command via PostgreSQL RCE techniques (--cmd)
         bruteforce:         Enable credential brute-force
         username_file:      File with usernames
         password_file:      File with passwords
@@ -207,6 +209,11 @@ async def postgrescan(
         delay:              Delay between connections (default: 0)
         resume:             Resume from index (default: 0)
         nodb:               Skip Elasticsearch storage (default: True)
+
+    Examples:
+        postgrescan(targets="10.0.0.0/24")
+        postgrescan(targets="192.168.1.1", username="postgres", password="postgres", list_dbs=True, dump_hashes=True)
+        postgrescan(targets="192.168.1.1", username="postgres", password="postgres", cmd="id")
     """
     c = base_cmd("postgrescan")
     add_targets(c, targets, target_file)
@@ -217,8 +224,10 @@ async def postgrescan(
         c.extend(["--pass", password])
     if list_dbs:
         c.append("--dbs")
-    if sql_query:
-        c.extend(["--sql", sql_query])
+    if dump_hashes:
+        c.append("--hashes")
+    if cmd:
+        c.extend(["--cmd", cmd])
     if bruteforce:
         c.append("--bruteforce")
     if username_file:
@@ -237,6 +246,7 @@ async def mongoscan(
     target_file: Optional[str] = None,
     port: str = "27017",
     username: Optional[str] = None,
+    database: str = "",
     password: Optional[str] = None,
     list_dbs: bool = False,
     bruteforce: bool = False,
@@ -257,8 +267,9 @@ async def mongoscan(
         target_file:        File with one target per line
         port:               MongoDB port (default: "27017")
         username:           Username to authenticate with
+        database:           Database to authenticate against (-d, default: "")
         password:           Password to authenticate with
-        list_dbs:           List available databases
+        list_dbs:           List available databases (--dbs)
         bruteforce:         Enable credential brute-force
         username_file:      File with usernames
         password_file:      File with passwords
@@ -274,6 +285,8 @@ async def mongoscan(
     c.extend(["-p", port])
     if username:
         c.extend(["-u", username])
+    if database:
+        c.extend(["-d", database])
     if password:
         c.extend(["--pass", password])
     if list_dbs:

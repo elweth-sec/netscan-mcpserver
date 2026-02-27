@@ -155,9 +155,10 @@ async def vncscan(
     target_file: Optional[str] = None,
     port: str = "5900",
     password: Optional[str] = None,
+    screenshot: bool = False,
+    ducky: Optional[str] = None,
     bruteforce: bool = False,
     password_file: Optional[str] = None,
-    bruteforce_workers: int = 5,
     workers: int = 10,
     timeout: int = 5,
     delay: float = 0,
@@ -168,30 +169,37 @@ async def vncscan(
     Scan VNC (Virtual Network Computing) services and test credentials.
 
     Args:
-        targets:            Target IP, CIDR, or hostname
-        target_file:        File with one target per line
-        port:               VNC port (default: "5900")
-        password:           Password to test
-        bruteforce:         Enable password brute-force
-        password_file:      File with passwords for brute-force
-        bruteforce_workers: Concurrent brute-force workers (default: 5)
-        workers:            Concurrent scan workers (default: 10)
-        timeout:            Connection timeout in seconds (default: 5)
-        delay:              Delay between connections (default: 0)
-        resume:             Resume from index (default: 0)
-        nodb:               Skip Elasticsearch storage (default: True)
+        targets:      Target IP, CIDR, or hostname
+        target_file:  File with one target per line
+        port:         VNC port (default: "5900")
+        password:     Password to test
+        screenshot:   Capture a screenshot of the VNC session (--screenshot)
+        ducky:        Path to a ducky script to execute (--ducky)
+        bruteforce:   Enable password brute-force
+        password_file: File with passwords for brute-force
+        workers:      Concurrent scan workers (default: 10)
+        timeout:      Connection timeout in seconds (default: 5)
+        delay:        Delay between connections (default: 0)
+        resume:       Resume from index (default: 0)
+        nodb:         Skip Elasticsearch storage (default: True)
+
+    Examples:
+        vncscan(targets="10.0.0.0/24")
+        vncscan(targets="192.168.1.1", password="secret", screenshot=True)
     """
     c = base_cmd("vncscan")
     add_targets(c, targets, target_file)
     c.extend(["-p", port])
     if password:
         c.extend(["--pass", password])
+    if screenshot:
+        c.append("--screenshot")
+    if ducky:
+        c.extend(["--ducky", ducky])
     if bruteforce:
         c.append("--bruteforce")
     if password_file:
         c.extend(["-P", password_file])
-    if bruteforce_workers != 5:
-        c.extend(["-W", str(bruteforce_workers)])
     add_common(c, workers, timeout, delay, resume, nodb)
     return await run(c)
 
@@ -201,6 +209,13 @@ async def telnetscan(
     targets: Optional[str] = None,
     target_file: Optional[str] = None,
     port: str = "23",
+    username: Optional[str] = None,
+    password: Optional[str] = None,
+    cmd: Optional[str] = None,
+    bruteforce: bool = False,
+    username_file: Optional[str] = None,
+    password_file: Optional[str] = None,
+    bruteforce_workers: int = 5,
     workers: int = 10,
     timeout: int = 5,
     delay: float = 0,
@@ -208,21 +223,46 @@ async def telnetscan(
     nodb: bool = True,
 ) -> str:
     """
-    Scan for Telnet services.
+    Scan Telnet services and test credentials.
 
     Args:
-        targets:     Target IP, CIDR, or hostname
-        target_file: File with one target per line
-        port:        Telnet port (default: "23")
-        workers:     Concurrent workers (default: 10)
-        timeout:     Connection timeout in seconds (default: 5)
-        delay:       Delay between connections (default: 0)
-        resume:      Resume from index (default: 0)
-        nodb:        Skip Elasticsearch storage (default: True)
+        targets:            Target IP, CIDR, or hostname
+        target_file:        File with one target per line
+        port:               Telnet port (default: "23")
+        username:           Username to test
+        password:           Password to test
+        cmd:                Command to execute on authenticated hosts
+        bruteforce:         Enable credential brute-force
+        username_file:      File with usernames
+        password_file:      File with passwords
+        bruteforce_workers: Concurrent brute-force workers (default: 5)
+        workers:            Concurrent scan workers (default: 10)
+        timeout:            Connection timeout in seconds (default: 5)
+        delay:              Delay between connections (default: 0)
+        resume:             Resume from index (default: 0)
+        nodb:               Skip Elasticsearch storage (default: True)
+
+    Examples:
+        telnetscan(targets="10.0.0.0/24")
+        telnetscan(targets="192.168.1.1", username="admin", password="admin", cmd="id")
     """
     c = base_cmd("telnetscan")
     add_targets(c, targets, target_file)
     c.extend(["-p", port])
+    if username:
+        c.extend(["-u", username])
+    if password:
+        c.extend(["--pass", password])
+    if cmd:
+        c.extend(["--cmd", cmd])
+    if bruteforce:
+        c.append("--bruteforce")
+    if username_file:
+        c.extend(["-U", username_file])
+    if password_file:
+        c.extend(["-P", password_file])
+    if bruteforce_workers != 5:
+        c.extend(["-W", str(bruteforce_workers)])
     add_common(c, workers, timeout, delay, resume, nodb)
     return await run(c)
 

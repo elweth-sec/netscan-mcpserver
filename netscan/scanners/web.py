@@ -21,7 +21,10 @@ async def httpscan(
     extensions: Optional[str] = None,
     dir_workers: int = 5,
     proxy: Optional[str] = None,
+    gowitness: bool = False,
     modules: Optional[str] = None,
+    exec_cmd: Optional[str] = None,
+    bruteforce: Optional[str] = None,
     workers: int = 10,
     timeout: int = 5,
     delay: float = 0,
@@ -47,7 +50,10 @@ async def httpscan(
         extensions:     File extensions to try (e.g. "php,asp,html")
         dir_workers:    Concurrent directory bruteforce workers (default: 5)
         proxy:          Proxy URL (e.g. "http://127.0.0.1:8080")
+        gowitness:      Capture screenshots with gowitness (--gowitness)
         modules:        Comma-separated netscan modules to run
+        exec_cmd:       Execute command if RCE is found via a module (--exec)
+        bruteforce:     Credential bruteforce wordlist file (--bruteforce)
         workers:        Concurrent scan workers (default: 10)
         timeout:        Connection timeout in seconds (default: 5)
         delay:          Delay between connections (default: 0)
@@ -58,6 +64,7 @@ async def httpscan(
         httpscan(targets="10.0.0.0/24", ports="80,443,8080,8443")
         httpscan(targets="10.0.0.1", path="/admin", http_auth="admin:admin")
         httpscan(targets="10.0.0.1", dir_bruteforce="/usr/share/wordlists/dirb/common.txt")
+        httpscan(targets="10.0.0.1", modules="drupal", exec_cmd="id")
     """
     c = base_cmd("httpscan")
     add_targets(c, targets, target_file)
@@ -80,8 +87,14 @@ async def httpscan(
             c.extend(["-W", str(dir_workers)])
     if proxy:
         c.extend(["--proxy", proxy])
+    if gowitness:
+        c.append("--gowitness")
     if modules:
         c.extend(["-m", modules])
+    if exec_cmd:
+        c.extend(["--exec", exec_cmd])
+    if bruteforce:
+        c.extend(["--bruteforce", bruteforce])
     add_common(c, workers, timeout, delay, resume, nodb)
     return await run(c)
 
@@ -91,6 +104,7 @@ async def tlsscan(
     targets: Optional[str] = None,
     target_file: Optional[str] = None,
     port: str = "443",
+    mozilla_config: str = "intermediate",
     workers: int = 10,
     timeout: int = 5,
     delay: float = 0,
@@ -101,17 +115,24 @@ async def tlsscan(
     Scan TLS/SSL services to retrieve certificates and enumerate cipher suites.
 
     Args:
-        targets:     Target IP, CIDR, or hostname
-        target_file: File with one target per line
-        port:        Port to scan (default: "443")
-        workers:     Concurrent workers (default: 10)
-        timeout:     Connection timeout in seconds (default: 5)
-        delay:       Delay between connections (default: 0)
-        resume:      Resume from index (default: 0)
-        nodb:        Skip Elasticsearch storage (default: True)
+        targets:       Target IP, CIDR, or hostname
+        target_file:   File with one target per line
+        port:          Port to scan (default: "443")
+        mozilla_config: Check TLS config against Mozilla guidelines: "old", "intermediate", or "modern" (default: "intermediate")
+        workers:       Concurrent workers (default: 10)
+        timeout:       Connection timeout in seconds (default: 5)
+        delay:         Delay between connections (default: 0)
+        resume:        Resume from index (default: 0)
+        nodb:          Skip Elasticsearch storage (default: True)
+
+    Examples:
+        tlsscan(targets="10.0.0.0/24")
+        tlsscan(targets="192.168.1.1", mozilla_config="modern")
     """
     c = base_cmd("tlsscan")
     add_targets(c, targets, target_file)
     c.extend(["-p", port])
+    if mozilla_config != "intermediate":
+        c.extend(["--mozilla-config", mozilla_config])
     add_common(c, workers, timeout, delay, resume, nodb)
     return await run(c)
